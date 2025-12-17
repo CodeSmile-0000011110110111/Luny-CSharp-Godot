@@ -39,13 +39,13 @@ namespace Luny.Godot
             _dispatcher = EngineLifecycleDispatcher.Instance;
         }
 
+        public override void _PhysicsProcess(Double delta) => _dispatcher?.OnFixedStep(delta);
+
         public override void _Process(Double delta)
         {
             _dispatcher?.OnUpdate(delta);
             _dispatcher?.OnLateUpdate(delta);
         }
-
-        public override void _PhysicsProcess(Double delta) => _dispatcher?.OnFixedStep(delta);
 
         public override void _ExitTree()
         {
