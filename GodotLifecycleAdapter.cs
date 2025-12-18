@@ -19,19 +19,19 @@ namespace Luny.Godot
         {
             if (_instance != null)
             {
-                Throw.LifecycleAdapterSingletonDuplicationException(nameof(GodotLifecycleAdapter), _instance.Name,
+                LunyThrow.LifecycleAdapterSingletonDuplicationException(nameof(GodotLifecycleAdapter), _instance.Name,
                     unchecked((Int64)_instance.GetInstanceId()), current.Name, (Int64)current.GetInstanceId());
             }
         }
 
         // Instantiated automatically via Globals/Autoload
         // If it doesn't instantiate, check if LunyScript plugin is enabled.
-        private GodotLifecycleAdapter() => Initialize();
+        private GodotLifecycleAdapter() => CallDeferred(nameof(Initialize));
 
         private void Initialize()
         {
             // Logging comes first, we don't want to miss anything
-            LunyLogger.SetLogger(new GodotLogger());
+            LunyLogger.Logger = new GodotLogger();
 
             EnsureSingleInstance(this);
 
@@ -53,7 +53,7 @@ namespace Luny.Godot
             if (_instance != null)
             {
                 Shutdown();
-                Throw.LifecycleAdapterPrematurelyRemovedException(nameof(GodotLifecycleAdapter));
+                LunyThrow.LifecycleAdapterPrematurelyRemovedException(nameof(GodotLifecycleAdapter));
             }
         }
 

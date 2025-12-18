@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bye1pxejp126k"]
+
+[node name="LunyLifecycleSmokeTest" type="Node3D"]
+
+[node name="NOTES" type="Node" parent="."]
+
+[node name="This scene will intentionally exit playmode after a few frames" type="Node" parent="."]
+
+[node name="Check Output and Debugger windows after playback for errors" type="Node" parent="."]
