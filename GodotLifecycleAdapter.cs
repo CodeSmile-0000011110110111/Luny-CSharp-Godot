@@ -13,7 +13,7 @@ namespace Luny.Godot
     {
         private static GodotLifecycleAdapter _instance;
 
-        private IEngineLifecycleDispatcher _dispatcher;
+        private ILunyEngine _lunyEngine;
 
         private static void EnsureSingleInstance(Node current)
         {
@@ -36,15 +36,15 @@ namespace Luny.Godot
             EnsureSingleInstance(this);
 
             _instance = this;
-            _dispatcher = EngineLifecycleDispatcher.Instance;
+            _lunyEngine = LunyEngine.Instance;
         }
 
-        public override void _PhysicsProcess(Double delta) => _dispatcher?.OnFixedStep(delta);
+        public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnFixedStep(delta);
 
         public override void _Process(Double delta)
         {
-            _dispatcher?.OnUpdate(delta);
-            _dispatcher?.OnLateUpdate(delta);
+            _lunyEngine?.OnUpdate(delta);
+            _lunyEngine?.OnLateUpdate(delta);
         }
 
         public override void _ExitTree()
@@ -79,7 +79,7 @@ namespace Luny.Godot
             try
             {
                 LunyLogger.LogInfo("Shutting down...", this);
-                _dispatcher?.OnShutdown();
+                _lunyEngine?.OnShutdown();
             }
             catch (Exception ex)
             {
@@ -87,7 +87,7 @@ namespace Luny.Godot
             }
             finally
             {
-                _dispatcher = null;
+                _lunyEngine = null;
                 _instance = null;
                 LunyLogger.LogInfo("Shutdown complete.", this);
             }
