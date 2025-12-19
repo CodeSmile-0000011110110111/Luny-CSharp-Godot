@@ -1,6 +1,9 @@
 using Godot;
+using Luny.Godot.Proxies;
 using Luny.Providers;
+using Luny.Proxies;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Luny.Godot.Providers
@@ -18,6 +21,63 @@ namespace Luny.Godot.Providers
 				var currentScene = tree?.CurrentScene;
 				return currentScene?.Name ?? Path.GetFileNameWithoutExtension(currentScene?.SceneFilePath) ?? String.Empty;
 			}
+		}
+
+		public IReadOnlyList<LunyObject> GetAllObjects()
+		{
+			var tree = (SceneTree)Engine.GetMainLoop();
+			var currentScene = tree?.CurrentScene;
+
+			if (currentScene == null)
+				return Array.Empty<LunyObject>();
+
+			var allObjects = new List<LunyObject>();
+
+			// Add all nodes recursively starting from root
+			void AddNodeAndChildren(Node node)
+			{
+				allObjects.Add(new GodotNode(node));
+
+				foreach (Node child in node.GetChildren())
+				{
+					AddNodeAndChildren(child);
+				}
+			}
+
+			AddNodeAndChildren(currentScene);
+
+			return allObjects;
+		}
+
+		public LunyObject FindObjectByName(String name)
+		{
+			if (String.IsNullOrEmpty(name))
+				return null;
+
+			var tree = (SceneTree)Engine.GetMainLoop();
+			var currentScene = tree?.CurrentScene;
+
+			if (currentScene == null)
+				return null;
+
+			// Search recursively through scene hierarchy
+			Node FindNodeRecursive(Node node)
+			{
+				if (node.Name == name)
+					return node;
+
+				foreach (Node child in node.GetChildren())
+				{
+					var found = FindNodeRecursive(child);
+					if (found != null)
+						return found;
+				}
+
+				return null;
+			}
+
+			var foundNode = FindNodeRecursive(currentScene);
+			return foundNode != null ? new GodotNode(foundNode) : null;
 		}
 	}
 }

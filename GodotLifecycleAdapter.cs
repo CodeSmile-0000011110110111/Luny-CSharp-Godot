@@ -37,6 +37,7 @@ namespace Luny.Godot
 
             _instance = this;
             _lunyEngine = LunyEngine.Instance;
+            _lunyEngine.OnStartup();
         }
 
         public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnFixedStep(delta);
