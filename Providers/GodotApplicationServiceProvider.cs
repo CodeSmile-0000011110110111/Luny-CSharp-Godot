@@ -1,5 +1,5 @@
 using Godot;
-using Luny.Providers;
+using Luny.Interfaces.Providers;
 using System;
 
 namespace Luny.Godot.Providers

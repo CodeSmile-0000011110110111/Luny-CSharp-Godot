@@ -1,6 +1,6 @@
 using Godot;
 using Luny.Godot.Proxies;
-using Luny.Providers;
+using Luny.Interfaces.Providers;
 using Luny.Proxies;
 using System;
 using System.Collections.Generic;

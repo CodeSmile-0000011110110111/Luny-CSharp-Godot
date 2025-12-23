@@ -1,4 +1,7 @@
 using Godot;
+using Luny.Exceptions;
+using Luny.Interfaces;
+using Luny.Proxies;
 using System;
 
 namespace Luny.Godot

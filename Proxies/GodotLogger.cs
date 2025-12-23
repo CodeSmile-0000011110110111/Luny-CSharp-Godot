@@ -1,4 +1,5 @@
 using Godot;
+using Luny.Interfaces;
 using System;
 
 namespace Luny.Godot
