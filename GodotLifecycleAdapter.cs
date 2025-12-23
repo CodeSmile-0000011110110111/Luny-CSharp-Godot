@@ -6,95 +6,95 @@ using System;
 
 namespace Luny.Godot
 {
-	/// <summary>
-	/// Ultra-thin Godot adapter: auto-initializes and forwards lifecycle to EngineLifecycleDispatcher.
-	/// </summary>
-	/// <remarks>
-	/// Gets instantiated as autoload singleton, automatically added by plugin.gd.
-	/// </remarks>
-	internal sealed partial class GodotLifecycleAdapter : Node
-	{
-		private static GodotLifecycleAdapter _instance;
+    /// <summary>
+    /// Ultra-thin Godot adapter: auto-initializes and forwards lifecycle to EngineLifecycleDispatcher.
+    /// </summary>
+    /// <remarks>
+    /// Gets instantiated as autoload singleton, automatically added by plugin.gd.
+    /// </remarks>
+    internal sealed partial class GodotLifecycleAdapter : Node
+    {
+        private static GodotLifecycleAdapter _instance;
 
-		private ILunyEngine _lunyEngine;
+        private ILunyEngine _lunyEngine;
 
-		private static void EnsureSingleInstance(Node current)
-		{
-			if (_instance != null)
-			{
-				LunyThrow.LifecycleAdapterSingletonDuplicationException(nameof(GodotLifecycleAdapter), _instance.Name,
-					unchecked((Int64)_instance.GetInstanceId()), current.Name, (Int64)current.GetInstanceId());
-			}
-		}
+        private static void EnsureSingleInstance(Node current)
+        {
+            if (_instance != null)
+            {
+                LunyThrow.LifecycleAdapterSingletonDuplicationException(nameof(GodotLifecycleAdapter), _instance.Name,
+                    unchecked((Int64)_instance.GetInstanceId()), current.Name, (Int64)current.GetInstanceId());
+            }
+        }
 
-		// Instantiated automatically via Globals/Autoload
-		// If it doesn't instantiate, check if LunyScript plugin is enabled.
-		private GodotLifecycleAdapter() => CallDeferred(nameof(Initialize));
+        // Instantiated automatically via Globals/Autoload
+        // If it doesn't instantiate, check if LunyScript plugin is enabled.
+        private GodotLifecycleAdapter() => CallDeferred(nameof(Initialize));
 
-		private void Initialize()
-		{
-			// Logging comes first, we don't want to miss anything
-			LunyLogger.Logger = new GodotLogger();
+        private void Initialize()
+        {
+            // Logging comes first, we don't want to miss anything
+            LunyLogger.Logger = new GodotLogger();
 
-			EnsureSingleInstance(this);
+            EnsureSingleInstance(this);
 
-			_instance = this;
-			_lunyEngine = LunyEngine.Instance;
-			_lunyEngine.OnStartup();
-		}
+            _instance = this;
+            _lunyEngine = LunyEngine.Instance;
+            _lunyEngine.OnStartup();
+        }
 
-		public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnFixedStep(delta);
+        public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnFixedStep(delta);
 
-		public override void _Process(Double delta)
-		{
-			_lunyEngine?.OnUpdate(delta);
-			_lunyEngine?.OnLateUpdate(delta);
-		}
+        public override void _Process(Double delta)
+        {
+            _lunyEngine?.OnUpdate(delta);
+            _lunyEngine?.OnLateUpdate(delta);
+        }
 
-		public override void _ExitTree()
-		{
-			// we should not exit tree with an existing instance (indicates manual removal)
-			if (_instance != null)
-			{
-				Shutdown();
-				LunyThrow.LifecycleAdapterPrematurelyRemovedException(nameof(GodotLifecycleAdapter));
-			}
-		}
+        public override void _ExitTree()
+        {
+            // we should not exit tree with an existing instance (indicates manual removal)
+            if (_instance != null)
+            {
+                Shutdown();
+                LunyThrow.LifecycleAdapterPrematurelyRemovedException(nameof(GodotLifecycleAdapter));
+            }
+        }
 
-		public override void _Notification(Int32 what)
-		{
-			if (what != NotificationProcess && what != NotificationPhysicsProcess)
-				LunyLogger.LogInfo($"_Notification: {GodotHelper.ToNotificationString(what)}", this);
+        public override void _Notification(Int32 what)
+        {
+            if (what != NotificationProcess && what != NotificationPhysicsProcess)
+                LunyLogger.LogInfo($"_Notification: {GodotHelper.ToNotificationString(what)}", this);
 
-			switch ((Int64)what)
-			{
-				case NotificationCrash:
-				case NotificationWMCloseRequest:
-					Shutdown();
-					break;
-			}
-		}
+            switch ((Int64)what)
+            {
+                case NotificationCrash:
+                case NotificationWMCloseRequest:
+                    Shutdown();
+                    break;
+            }
+        }
 
-		private void Shutdown()
-		{
-			if (_instance == null)
-				return;
+        private void Shutdown()
+        {
+            if (_instance == null)
+                return;
 
-			try
-			{
-				LunyLogger.LogInfo("Shutting down...", this);
-				_lunyEngine?.OnShutdown();
-			}
-			catch (Exception ex)
-			{
-				LunyLogger.LogException(ex);
-			}
-			finally
-			{
-				_lunyEngine = null;
-				_instance = null;
-				LunyLogger.LogInfo("Shutdown complete.", this);
-			}
-		}
-	}
+            try
+            {
+                LunyLogger.LogInfo("Shutting down...", this);
+                _lunyEngine?.OnShutdown();
+            }
+            catch (Exception ex)
+            {
+                LunyLogger.LogException(ex);
+            }
+            finally
+            {
+                _lunyEngine = null;
+                _instance = null;
+                LunyLogger.LogInfo("Shutdown complete.", this);
+            }
+        }
+    }
 }
