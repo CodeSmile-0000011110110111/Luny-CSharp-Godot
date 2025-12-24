@@ -1,12 +1,12 @@
 ﻿using Luny.Services;
 using System.Diagnostics;
 
-namespace Luny.Godot.Providers
+namespace Luny.Godot.Services
 {
 	/// <summary>
 	/// Godot implementation of Debug provider.
 	/// </summary>
-	public sealed class GodotEditorServiceProvider : IEditorService
+	public sealed class GodotEditorService : IEditorService
 	{
 		/// <summary>
 		/// Caution: Falls back to Debugger.Break() because Godot doesn't support player pause/resume via script.

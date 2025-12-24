@@ -2,12 +2,12 @@ using Godot;
 using Luny.Services;
 using System;
 
-namespace Luny.Godot.Providers
+namespace Luny.Godot.Services
 {
 	/// <summary>
 	/// Godot implementation of application control provider.
 	/// </summary>
-	public sealed class GodotApplicationServiceProvider : IApplicationService
+	public sealed class GodotApplicationService : IApplicationService
 	{
 		public Boolean IsEditor => Engine.IsEditorHint();
 

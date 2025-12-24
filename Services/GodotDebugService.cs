@@ -2,12 +2,12 @@
 using Luny.Services;
 using System;
 
-namespace Luny.Godot.Providers
+namespace Luny.Godot.Services
 {
 	/// <summary>
 	/// Godot implementation of Debug provider.
 	/// </summary>
-	public sealed class GodotDebugServiceProvider : IDebugService
+	public sealed class GodotDebugService : IDebugService
 	{
 		public void LogInfo(String message) => GD.Print(message);
 

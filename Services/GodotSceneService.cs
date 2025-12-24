@@ -6,12 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Luny.Godot.Providers
+namespace Luny.Godot.Services
 {
 	/// <summary>
 	/// Godot implementation of scene information provider.
 	/// </summary>
-	public sealed class GodotSceneServiceProvider : ISceneService
+	public sealed class GodotSceneService : ISceneService
 	{
 		public String CurrentSceneName
 		{
