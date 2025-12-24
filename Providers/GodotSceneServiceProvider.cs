@@ -1,7 +1,7 @@
 using Godot;
 using Luny.Godot.Proxies;
-using Luny.Interfaces.Providers;
 using Luny.Proxies;
+using Luny.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ namespace Luny.Godot.Providers
 	/// <summary>
 	/// Godot implementation of scene information provider.
 	/// </summary>
-	public sealed class GodotSceneServiceProvider : ISceneServiceProvider
+	public sealed class GodotSceneServiceProvider : ISceneService
 	{
 		public String CurrentSceneName
 		{
@@ -38,10 +38,8 @@ namespace Luny.Godot.Providers
 			{
 				allObjects.Add(new GodotNode(node));
 
-				foreach (Node child in node.GetChildren())
-				{
+				foreach (var child in node.GetChildren())
 					AddNodeAndChildren(child);
-				}
 			}
 
 			AddNodeAndChildren(currentScene);
@@ -66,7 +64,7 @@ namespace Luny.Godot.Providers
 				if (node.Name == name)
 					return node;
 
-				foreach (Node child in node.GetChildren())
+				foreach (var child in node.GetChildren())
 				{
 					var found = FindNodeRecursive(child);
 					if (found != null)
