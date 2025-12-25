@@ -11,7 +11,7 @@ namespace Luny.Godot.Proxies
 	public sealed class GodotNode : LunyObject
 	{
 		private readonly Node _node;
-		private UInt64 _nativeID;
+		private readonly UInt64 _nativeID;
 		private String _name;
 
 		/// <summary>
@@ -19,7 +19,15 @@ namespace Luny.Godot.Proxies
 		/// </summary>
 		public Node Node => _node;
 		public override NativeID NativeID => _nativeID;
-		public override String Name => _name;
+		public override String Name
+		{
+			get => IsValid ? _node.Name : _name;
+			set
+			{
+				if (IsValid)
+					_node.Name = _name = value;
+			}
+		}
 		public override Boolean IsValid => _node != null && GodotObject.IsInstanceValid(_node) && _node.IsInsideTree();
 		public override Boolean Enabled
 		{
