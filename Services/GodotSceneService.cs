@@ -23,15 +23,15 @@ namespace Luny.Godot.Services
 			}
 		}
 
-		public IReadOnlyList<LunyObject> GetAllObjects()
+		public IReadOnlyList<ILunyObject> GetAllObjects()
 		{
 			var tree = (SceneTree)Engine.GetMainLoop();
 			var currentScene = tree?.CurrentScene;
 
 			if (currentScene == null)
-				return Array.Empty<LunyObject>();
+				return Array.Empty<ILunyObject>();
 
-			var allObjects = new List<LunyObject>();
+			var allObjects = new List<ILunyObject>();
 
 			// Add all nodes recursively starting from root
 			void AddNodeAndChildren(Node node)
@@ -47,7 +47,7 @@ namespace Luny.Godot.Services
 			return allObjects;
 		}
 
-		public LunyObject FindObjectByName(String name)
+		public ILunyObject FindObjectByName(String name)
 		{
 			if (String.IsNullOrEmpty(name))
 				return null;

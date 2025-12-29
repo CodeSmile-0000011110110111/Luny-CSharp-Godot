@@ -2,7 +2,6 @@ using Godot;
 using Luny.Diagnostics;
 using Luny.Exceptions;
 using Luny.Godot.Diagnostics;
-using Luny.Interfaces;
 using System;
 
 namespace Luny.Godot
