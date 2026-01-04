@@ -1,6 +1,4 @@
 using Luny.Engine.Bridge;
-using Luny.Engine.Identity;
-using Luny.Exceptions;
 using System;
 using Native = Godot;
 
@@ -9,109 +7,68 @@ namespace Luny.Godot.Engine.Bridge
 	/// <summary>
 	/// Godot-specific implementation wrapping Godot.Node.
 	/// </summary>
-	public sealed class GodotNode : LunyObject
+	internal sealed class GodotNode : LunyObject
 	{
-		private readonly UInt64 _nativeID;
-		private Native.Node _node;
-		private String _name;
-		private Boolean _isDestroyed;
-		private Boolean _isEnabled;
-		private Native.Node.ProcessModeEnum _initialProcessMode;
+		private Native.Node.ProcessModeEnum _enabledProcessMode;
 
-		/// <summary>
-		/// Gets the wrapped Godot Node.
-		/// </summary>
-		public Native.Node Node => _node;
-		public override LunyNativeObjectID NativeObjectID => _nativeID;
-		public override String Name
+		private Native.Node Node => Cast<Native.Node>();
+
+		private static Boolean IsNodeVisible(Native.Node node) => node switch
 		{
-			get => IsValid ? _node.Name : _name;
-			set
-			{
-				if (IsValid)
-					_node.Name = _name = value;
-			}
-		}
-		public override Boolean IsValid => !_isDestroyed && _node != null && Native.GodotObject.IsInstanceValid(_node) && _node.IsInsideTree();
-		public override Boolean IsEnabled
-		{
-			get => IsValid && _isEnabled;
-			set
-			{
-				if (_isEnabled == value)
-					return;
-				if (!IsValid)
-					return;
-
-				_isEnabled = value;
-				var isProcessModeDisabled = IsProcessModeDisabled(_node);
-				if (isProcessModeDisabled && _isEnabled)
-				{
-					_node.ProcessMode = _isEnabled ? _initialProcessMode : Native.Node.ProcessModeEnum.Disabled;
-					SetNodeVisible(_node, _isEnabled);
-				}
-
-				InvokeOnEnableOrOnDisable(_isEnabled);
-			}
-		}
-
-		private static Boolean IsProcessModeDisabled(Native.Node node) => node?.ProcessMode == Native.Node.ProcessModeEnum.Disabled;
+			Native.Node3D n3d => n3d.Visible,
+			Native.CanvasItem ci => ci.Visible,
+			Native.CanvasLayer cl => cl.Visible,
+			var _ => false,
+		};
 
 		private static void SetNodeVisible(Native.Node node, Boolean visible)
 		{
-			if (node == null)
-				return;
-
 			switch (node)
 			{
-				case Native.CanvasItem ci when ci.Visible != visible:
-					ci.Visible = visible;
-					break;
-				case Native.Node3D n3d when n3d.Visible != visible:
+				case Native.Node3D n3d:
 					n3d.Visible = visible;
 					break;
-				case Native.CanvasLayer cl when cl.Visible != visible:
+				case Native.CanvasItem ci:
+					ci.Visible = visible;
+					break;
+				case Native.CanvasLayer cl:
 					cl.Visible = visible;
 					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(node), $"unhandled Node class: {node?.GetType()}");
 			}
 		}
 
 		public GodotNode(Native.Node node)
-			: base(node)
+			: base(node, (Int64)node.GetInstanceId(), node.ProcessMode != Native.Node.ProcessModeEnum.Disabled, IsNodeVisible(node)) =>
+			SetDefaultEnabledMode(node);
+
+		// if the node starts Disabled, we default to Inherit when we wish to return to its "default" state
+		// otherwise a node starting Disabled would be .. hold your breath .. unenableable! :)
+		private void SetDefaultEnabledMode(Native.Node node) => _enabledProcessMode = node.ProcessMode == Native.Node.ProcessModeEnum.Disabled
+			? Native.Node.ProcessModeEnum.Inherit
+			: node.ProcessMode;
+
+		protected override void DestroyNativeObject() => Node?.QueueFree();
+		protected override Boolean IsNativeObjectValid() => Node is {} node && Native.GodotObject.IsInstanceValid(node) && node.IsInsideTree();
+		protected override String GetNativeObjectName() => Node.Name;
+		protected override void SetNativeObjectName(String name) => Node.Name = name;
+		protected override Boolean GetNativeObjectEnabledInHierarchy() => Node.CanProcess();
+		protected override Boolean GetNativeObjectEnabled() => Node.ProcessMode != Native.Node.ProcessModeEnum.Disabled;
+
+		protected override void SetNativeObjectEnabled()
 		{
-			if (node == null)
-				throw new ArgumentNullException(nameof(node), $"{nameof(GodotNode)} {nameof(Node)} reference must not be null.");
-
-			_node = node;
-
-			// stored for reference in case object reference unexpectedly becomes null or "missing"
-			_name = _node.Name;
-			_nativeID = _node.GetInstanceId();
-
-			// set initial state
-			_initialProcessMode = _node.ProcessMode;
-			_isEnabled = !IsProcessModeDisabled(_node);
+			var node = Node;
+			node.ProcessMode = _enabledProcessMode;
+			SetNodeVisible(node, true); // follows Unity's "active" model
 		}
 
-		public override void Destroy()
+		protected override void SetNativeObjectDisabled()
 		{
-			if (!IsValid)
-				return;
-
-			IsEnabled = false; // triggers OnDisable if enabled
-			InvokeOnDestroy();
-			_isDestroyed = true; // Mark as destroyed (native destruction happens later)
+			var node = Node;
+			node.ProcessMode = Native.Node.ProcessModeEnum.Disabled;
+			SetNodeVisible(node, false); // follows Unity's "active" model
 		}
 
-		public override void DestroyNativeObject()
-		{
-			if (IsValid)
-				throw new LunyLifecycleException($"{nameof(DestroyNativeObject)}() called without calling {nameof(Destroy)}() first: {this}");
-
-			_node?.QueueFree();
-			_node = null;
-		}
+		protected override void SetNativeObjectVisible() => SetNodeVisible(Node, true);
+		protected override void SetNativeObjectInvisible() => SetNodeVisible(Node, false);
 	}
 }
