@@ -1,9 +1,9 @@
 using Godot;
 using Luny.Engine;
-using Luny.Godot.Diagnostics;
+using Luny.Godot.Engine.Services;
 using System;
 
-namespace Luny.Godot
+namespace Luny.Godot.Engine
 {
 	/// <summary>
 	/// Ultra-thin Godot adapter: auto-initializes and forwards lifecycle to EngineLifecycleDispatcher.

@@ -2,7 +2,7 @@ using Luny.Engine.Services;
 using System;
 using Native = Godot;
 
-namespace Luny.Godot.Services
+namespace Luny.Godot.Engine.Services
 {
 	/// <summary>
 	/// Godot implementation of application control provider.

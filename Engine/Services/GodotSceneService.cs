@@ -1,12 +1,12 @@
 using Luny.Engine.Bridge;
 using Luny.Engine.Services;
-using Luny.Godot.Proxies;
+using Luny.Godot.Engine.Bridge;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Native = Godot;
 
-namespace Luny.Godot.Services
+namespace Luny.Godot.Engine.Services
 {
 	/// <summary>
 	/// Godot implementation of scene information provider.

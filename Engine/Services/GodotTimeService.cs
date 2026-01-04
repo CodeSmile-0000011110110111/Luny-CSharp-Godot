@@ -2,7 +2,7 @@
 using System;
 using Native = Godot;
 
-namespace Luny.Godot.Services
+namespace Luny.Godot.Engine.Services
 {
 	/// <summary>
 	/// Godot implementation of time service provider.

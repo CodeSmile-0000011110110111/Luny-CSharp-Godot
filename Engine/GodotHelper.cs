@@ -1,7 +1,7 @@
 ﻿using Godot;
 using System;
 
-namespace Luny.Godot
+namespace Luny.Godot.Engine
 {
 	public static class GodotHelper
 	{

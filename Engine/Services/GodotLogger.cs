@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Luny.Godot.Diagnostics
+namespace Luny.Godot.Engine.Services
 {
 	internal sealed class GodotLogger : ILunyLogger
 	{

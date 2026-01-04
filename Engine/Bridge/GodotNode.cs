@@ -3,7 +3,7 @@ using Luny.Exceptions;
 using System;
 using Native = Godot;
 
-namespace Luny.Godot.Proxies
+namespace Luny.Godot.Engine.Bridge
 {
 	/// <summary>
 	/// Godot-specific implementation wrapping Godot.Node.
