@@ -37,15 +37,22 @@ namespace Luny.Godot.Engine.Bridge
 			}
 		}
 
+		private static void SetNodeProcessingAndVisibleState(Native.Node node, Native.Node.ProcessModeEnum processMode)
+		{
+			node.ProcessMode = processMode;
+
+			// Visibility follows Unity's "active" model: enabled=processing+visible / disabled=stopped+hidden
+			var shouldBeVisible = processMode != Native.Node.ProcessModeEnum.Disabled;
+			SetNodeVisible(node, shouldBeVisible);
+		}
+
 		public GodotNode(Native.Node node)
 			: base(node, (Int64)node.GetInstanceId(), node.ProcessMode != Native.Node.ProcessModeEnum.Disabled, IsNodeVisible(node)) =>
-			SetDefaultEnabledMode(node);
-
-		// if the node starts Disabled, we default to Inherit when we wish to return to its "default" state
-		// otherwise a node starting Disabled would be .. hold your breath .. unenableable! :)
-		private void SetDefaultEnabledMode(Native.Node node) => _enabledProcessMode = node.ProcessMode == Native.Node.ProcessModeEnum.Disabled
-			? Native.Node.ProcessModeEnum.Inherit
-			: node.ProcessMode;
+			// if the node starts Disabled, we default to Inherit when we wish to return to its "default" state
+			// otherwise a node starting Disabled would be .. hold your breath .. unenableable! :)
+			_enabledProcessMode = node.ProcessMode == Native.Node.ProcessModeEnum.Disabled
+				? Native.Node.ProcessModeEnum.Inherit
+				: node.ProcessMode;
 
 		protected override void DestroyNativeObject() => Node?.QueueFree();
 		protected override Boolean IsNativeObjectValid() => Node is {} node && Native.GodotObject.IsInstanceValid(node) && node.IsInsideTree();
@@ -54,20 +61,8 @@ namespace Luny.Godot.Engine.Bridge
 		protected override Boolean GetNativeObjectEnabledInHierarchy() => Node.CanProcess();
 		protected override Boolean GetNativeObjectEnabled() => Node.ProcessMode != Native.Node.ProcessModeEnum.Disabled;
 
-		protected override void SetNativeObjectEnabled()
-		{
-			var node = Node;
-			node.ProcessMode = _enabledProcessMode;
-			SetNodeVisible(node, true); // follows Unity's "active" model
-		}
-
-		protected override void SetNativeObjectDisabled()
-		{
-			var node = Node;
-			node.ProcessMode = Native.Node.ProcessModeEnum.Disabled;
-			SetNodeVisible(node, false); // follows Unity's "active" model
-		}
-
+		protected override void SetNativeObjectEnabled() => SetNodeProcessingAndVisibleState(Node, _enabledProcessMode);
+		protected override void SetNativeObjectDisabled() => SetNodeProcessingAndVisibleState(Node, Native.Node.ProcessModeEnum.Disabled);
 		protected override void SetNativeObjectVisible() => SetNodeVisible(Node, true);
 		protected override void SetNativeObjectInvisible() => SetNodeVisible(Node, false);
 	}
