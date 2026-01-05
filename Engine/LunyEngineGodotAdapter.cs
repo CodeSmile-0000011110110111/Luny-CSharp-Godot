@@ -1,5 +1,5 @@
 using Godot;
-using Luny.Engine;
+using Luny.Engine.Bridge;
 using Luny.Godot.Engine.Services;
 using System;
 
@@ -11,10 +11,10 @@ namespace Luny.Godot.Engine
 	/// <remarks>
 	/// Gets instantiated as autoload singleton, automatically added by plugin.gd.
 	/// </remarks>
-	internal sealed partial class LunyEngineGodotAdapter : Node, ILunyEngineAdapter
+	internal sealed partial class LunyEngineGodotAdapter : Node, ILunyEngineNativeAdapter
 	{
 		// intentionally remains private - user code must use LunyEngine.Instance!
-		private static ILunyEngineAdapter s_Instance;
+		private static ILunyEngineNativeAdapter s_Instance;
 
 		// hold on to LunyEngine reference (not a Node type)
 		private ILunyEngine _lunyEngine;
@@ -29,24 +29,24 @@ namespace Luny.Godot.Engine
 			LunyLogger.Logger = new GodotLogger();
 			LunyLogger.LogInfo("Initializing...", typeof(LunyEngineGodotAdapter));
 
-			s_Instance = ILunyEngineAdapter.ValidateAdapterSingletonInstance(s_Instance, this);
+			s_Instance = ILunyEngineNativeAdapter.ValidateAdapterSingletonInstance(s_Instance, this);
 			_lunyEngine = LunyEngine.CreateInstance(this);
 		}
 
 		public override void _Ready() // => OnStartup()
 		{
-			ILunyEngineAdapter.AssertNotNull(s_Instance);
-			ILunyEngineAdapter.AssertLunyEngineNotNull(_lunyEngine);
+			ILunyEngineNativeAdapter.AssertNotNull(s_Instance);
+			ILunyEngineNativeAdapter.AssertLunyEngineNotNull(_lunyEngine);
 
-			_lunyEngine?.OnStartup();
+			_lunyEngine?.OnEngineStartup();
 		}
 
-		public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnFixedStep(delta); // => OnFixedStep()
+		public override void _PhysicsProcess(Double delta) => _lunyEngine?.OnEngineFixedStep(delta); // => OnFixedStep()
 
 		public override void _Process(Double delta) // => OnUpdate() + OnLateUpdate()
 		{
-			_lunyEngine?.OnUpdate(delta);
-			_lunyEngine?.OnLateUpdate(delta); // Godot has no separate "late update" callback
+			_lunyEngine?.OnEngineUpdate(delta);
+			_lunyEngine?.OnEngineLateUpdate(delta); // Godot has no separate "late update" callback
 		}
 
 		public override void _Notification(Int32 what) // => OnShutdown()
@@ -63,7 +63,7 @@ namespace Luny.Godot.Engine
 		public override void _ExitTree()
 		{
 			// we should not exit tree with an existing instance (indicates manual removal)
-			ILunyEngineAdapter.AssertNotPrematurelyRemoved(s_Instance, _lunyEngine);
+			ILunyEngineNativeAdapter.AssertNotPrematurelyRemoved(s_Instance, _lunyEngine);
 			Shutdown();
 		}
 
@@ -76,7 +76,7 @@ namespace Luny.Godot.Engine
 
 			try
 			{
-				ILunyEngineAdapter.ShutdownLunyEngine(s_Instance, _lunyEngine);
+				ILunyEngineNativeAdapter.ShutdownLunyEngine(s_Instance, _lunyEngine);
 			}
 			catch (Exception ex)
 			{
@@ -84,7 +84,7 @@ namespace Luny.Godot.Engine
 			}
 			finally
 			{
-				ILunyEngineAdapter.ShutdownComplete(s_Instance);
+				ILunyEngineNativeAdapter.ShutdownComplete(s_Instance);
 
 				_lunyEngine = null;
 				s_Instance = null;
