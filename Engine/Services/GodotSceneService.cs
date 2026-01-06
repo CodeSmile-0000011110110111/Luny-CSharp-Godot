@@ -3,6 +3,7 @@ using Luny.Engine.Services;
 using Luny.Godot.Engine.Bridge;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Native = Godot;
 
@@ -13,15 +14,13 @@ namespace Luny.Godot.Engine.Services
 	/// </summary>
 	public sealed class GodotSceneService : SceneServiceBase, ISceneService
 	{
-		public String CurrentSceneName
-		{
-			get
-			{
-				var tree = (Native.SceneTree)Native.Engine.GetMainLoop();
-				var currentScene = tree?.CurrentScene;
-				return currentScene?.Name ?? Path.GetFileNameWithoutExtension(currentScene?.SceneFilePath) ?? String.Empty;
-			}
-		}
+		private Native.Node _currentScene;
+
+		public String ActiveSceneName { get; set; }
+
+		[NotNull] private static Native.SceneTree SceneTree { get; set; }
+
+		public void ReloadScene() => throw new NotImplementedException();
 
 		public IReadOnlyList<ILunyObject> GetAllObjects()
 		{
@@ -76,6 +75,55 @@ namespace Luny.Godot.Engine.Services
 
 			var foundNode = FindNodeRecursive(currentScene);
 			return foundNode != null ? new GodotNode(foundNode) : null;
+		}
+
+		protected override void OnServiceStartup()
+		{
+			SceneTree = (Native.SceneTree)Native.Engine.GetMainLoop();
+			SetCurrentScene(SceneTree.CurrentScene);
+
+			// Connect signals using the Godot += syntax
+			SceneTree.NodeAdded += OnNativeSceneLoaded;
+			SceneTree.NodeRemoved += OnNativeSceneUnloaded;
+		}
+
+		protected override void OnServiceShutdown()
+		{
+			// Disconnect signals
+			SceneTree.NodeAdded -= OnNativeSceneLoaded;
+			SceneTree.NodeRemoved -= OnNativeSceneUnloaded;
+
+			_currentScene = null;
+			SceneTree = null;
+		}
+
+		private void OnNativeSceneLoaded(Native.Node node)
+		{
+			if (node == SceneTree.CurrentScene)
+			{
+				LunyLogger.LogInfo($"OnNativeSceneLoaded: {node.Name}, current: {_currentScene}, " +
+				                   $"SceneTree.CurrentScene: {SceneTree.CurrentScene}", this);
+				SetCurrentScene(SceneTree.CurrentScene);
+			}
+		}
+
+		private void OnNativeSceneUnloaded(Native.Node node)
+		{
+			// Note: By the time NodeRemoved fires, GetTree().CurrentScene might already be null or the new scene.
+			if (_currentScene != SceneTree.CurrentScene)
+			{
+				LunyLogger.LogInfo($"OnNativeSceneUnloaded: {node.Name}, current: {_currentScene}, " +
+				                   $"SceneTree.CurrentScene: {SceneTree.CurrentScene}", this);
+				SetCurrentScene(SceneTree.CurrentScene);
+			}
+		}
+
+		private void SetCurrentScene(Native.Node scene)
+		{
+			_currentScene = scene;
+			ActiveSceneName = _currentScene?.Name ?? Path.GetFileNameWithoutExtension(_currentScene?.SceneFilePath) ?? String.Empty;
+
+			LunyLogger.LogInfo($"SetCurrentScene: {_currentScene}, name: {ActiveSceneName}", this);
 		}
 	}
 }

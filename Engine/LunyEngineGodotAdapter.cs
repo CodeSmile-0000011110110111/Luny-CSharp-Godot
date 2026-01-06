@@ -1,5 +1,5 @@
 using Godot;
-using Luny.Engine.Bridge;
+using Luny.Engine.Services;
 using Luny.Godot.Engine.Services;
 using System;
 
@@ -27,10 +27,12 @@ namespace Luny.Godot.Engine
 		{
 			// Logging comes first, we don't want to miss anything
 			LunyLogger.Logger = new GodotLogger();
-			LunyLogger.LogInfo("Initializing...", typeof(LunyEngineGodotAdapter));
+			LunyTraceLogger.LogInfoInitializing(this);
 
 			s_Instance = ILunyEngineNativeAdapter.ValidateAdapterSingletonInstance(s_Instance, this);
 			_lunyEngine = LunyEngine.CreateInstance(this);
+
+			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
 		public override void _Ready() // => OnStartup()
@@ -55,19 +57,27 @@ namespace Luny.Godot.Engine
 			{
 				case NotificationCrash:
 				case NotificationWMCloseRequest:
+					ILunyEngineNativeAdapter.IsApplicationQuitting = true;
 					Shutdown();
+					Destroy();
 					break;
 			}
 		}
 
-		public override void _ExitTree()
+		public override void _ExitTree() => Destroy();
+
+		private void Destroy()
 		{
+			LunyTraceLogger.LogInfoDestroying(this);
+
 			// we should not exit tree with an existing instance (indicates manual removal)
 			ILunyEngineNativeAdapter.ThrowIfPrematurelyRemoved(s_Instance, _lunyEngine);
-			Shutdown();
+
+			LunyTraceLogger.LogInfoDestroyed(this);
+			ILunyEngineNativeAdapter.EndLogging();
 		}
 
-		~LunyEngineGodotAdapter() => LunyLogger.LogInfo($"[{nameof(LunyEngineGodotAdapter)}] finalized {GetHashCode()}");
+		~LunyEngineGodotAdapter() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void Shutdown()
 		{
