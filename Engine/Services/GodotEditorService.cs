@@ -6,7 +6,7 @@ namespace Luny.Godot.Engine.Services
 	/// <summary>
 	/// Godot implementation of Debug provider.
 	/// </summary>
-	public sealed class GodotEditorService : EditorServiceBase, IEditorService
+	public sealed class GodotEditorService : LunyEditorServiceBase, ILunyEditorService
 	{
 		/// <summary>
 		/// Caution: Falls back to Debugger.Break() because Godot doesn't support player pause/resume via script.
@@ -19,5 +19,9 @@ namespace Luny.Godot.Engine.Services
 			if (sceneTree != null)
 				sceneTree.Paused = true;
 		*/
+
+		protected override void OnServiceInitialize() {}
+		protected override void OnServiceStartup() {}
+		protected override void OnServiceShutdown() {}
 	}
 }

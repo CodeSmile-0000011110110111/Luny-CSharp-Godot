@@ -7,7 +7,7 @@ namespace Luny.Godot.Engine.Services
 	/// <summary>
 	/// Godot implementation of application control provider.
 	/// </summary>
-	public sealed class GodotApplicationService : ApplicationServiceBase, IApplicationService
+	public sealed class GodotApplicationService : LunyApplicationServiceBase, ILunyApplicationService
 	{
 		public Boolean IsEditor => Native.Engine.IsEditorHint();
 
@@ -21,5 +21,9 @@ namespace Luny.Godot.Engine.Services
 			// prefer deferred call - we don't know when and where user may call it
 			tree.CallDeferred("quit", exitCode);
 		}
+
+		protected override void OnServiceInitialize() {}
+		protected override void OnServiceStartup() {}
+		protected override void OnServiceShutdown() {}
 	}
 }

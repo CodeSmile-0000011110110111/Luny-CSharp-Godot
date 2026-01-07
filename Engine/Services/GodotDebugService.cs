@@ -7,7 +7,7 @@ namespace Luny.Godot.Engine.Services
 	/// <summary>
 	/// Godot implementation of Debug provider.
 	/// </summary>
-	public sealed class GodotDebugService : DebugServiceBase, IDebugService
+	public sealed class GodotDebugService : LunyDebugServiceBase, ILunyDebugService
 	{
 		public void LogInfo(String message) => GD.Print(message);
 
@@ -16,5 +16,8 @@ namespace Luny.Godot.Engine.Services
 		public void LogError(String message) => GD.PushError(message);
 
 		public void LogException(Exception exception) => GD.PushError(exception);
+		protected override void OnServiceInitialize() {}
+		protected override void OnServiceStartup() {}
+		protected override void OnServiceShutdown() {}
 	}
 }

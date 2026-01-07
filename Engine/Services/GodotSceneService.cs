@@ -12,7 +12,7 @@ namespace Luny.Godot.Engine.Services
 	/// <summary>
 	/// Godot implementation of scene information provider.
 	/// </summary>
-	public sealed class GodotSceneService : SceneServiceBase, ISceneService
+	public sealed class GodotSceneService : LunySceneServiceBase, ILunySceneService
 	{
 		private Native.Node _currentScene;
 
@@ -76,6 +76,8 @@ namespace Luny.Godot.Engine.Services
 			var foundNode = FindNodeRecursive(currentScene);
 			return foundNode != null ? new GodotNode(foundNode) : null;
 		}
+
+		protected override void OnServiceInitialize() {}
 
 		protected override void OnServiceStartup()
 		{
