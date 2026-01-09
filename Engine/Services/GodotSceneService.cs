@@ -1,7 +1,6 @@
 using Luny.Engine.Bridge;
 using Luny.Engine.Services;
 using Luny.Godot.Engine.Bridge;
-using Luny.Unity.Engine.Bridge;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -84,7 +83,7 @@ namespace Luny.Godot.Engine.Services
 
 		protected override void OnServiceStartup()
 		{
-			CurrentScene = new LunyGodotScene(SceneTree.CurrentScene);
+			CurrentScene = new GodotScene(SceneTree.CurrentScene);
 			LunyLogger.LogInfo($"{nameof(OnServiceInitialize)}: CurrentScene={CurrentScene}", this);
 		}
 
@@ -102,7 +101,7 @@ namespace Luny.Godot.Engine.Services
 		{
 			if (node == SceneTree.CurrentScene)
 			{
-				CurrentScene = new LunyGodotScene(SceneTree.CurrentScene);
+				CurrentScene = new GodotScene(SceneTree.CurrentScene);
 
 				LunyLogger.LogInfo($"{nameof(OnNativeSceneLoaded)}: {CurrentScene} => {ToString()}", this);
 			}

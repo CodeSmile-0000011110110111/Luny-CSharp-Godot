@@ -2,14 +2,14 @@
 using System;
 using Node = Godot.Node;
 
-namespace Luny.Unity.Engine.Bridge
+namespace Luny.Godot.Engine.Bridge
 {
-	public sealed class LunyGodotScene : LunyScene
+	public sealed class GodotScene : LunyScene
 	{
 		private String _name;
 		public override String Name => _name ??= System.IO.Path.GetFileNameWithoutExtension(((Node)NativeScene)?.SceneFilePath);
 
-		public LunyGodotScene(Node nativeScene)
-			: base(nativeScene, new LunyGodotPath(nativeScene.SceneFilePath)) {}
+		public GodotScene(Node nativeScene)
+			: base(nativeScene, new GodotPath(nativeScene.SceneFilePath)) {}
 	}
 }

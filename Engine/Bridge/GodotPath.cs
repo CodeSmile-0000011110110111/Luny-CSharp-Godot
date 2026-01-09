@@ -1,13 +1,13 @@
 ﻿using Luny.Engine.Bridge;
 using System;
 
-namespace Luny.Unity.Engine.Bridge
+namespace Luny.Godot.Engine.Bridge
 {
-	public sealed class LunyGodotPath : LunyPath
+	public sealed class GodotPath : LunyPath
 	{
-		public static implicit operator LunyGodotPath(String enginePath) => new(enginePath);
+		public static implicit operator GodotPath(String enginePath) => new(enginePath);
 
-		public LunyGodotPath(String nativePath)
+		public GodotPath(String nativePath)
 			: base(nativePath) {}
 
 		// Godot paths must remove their prefix
