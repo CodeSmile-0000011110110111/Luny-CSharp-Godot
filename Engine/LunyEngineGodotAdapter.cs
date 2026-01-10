@@ -16,7 +16,7 @@ namespace Luny.Godot.Engine
 		private static ILunyEngineNativeAdapter s_Instance;
 
 		// hold on to LunyEngine reference (not a Node type)
-		private ILunyEngine _lunyEngine;
+		private ILunyEngineAdapter _lunyEngine;
 
 		// Instantiated automatically via Globals/Autoload
 		// If it doesn't instantiate, check if LunyScript plugin is enabled.

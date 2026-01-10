@@ -18,9 +18,7 @@ namespace Luny.Godot.Engine.Services
 
 		public IReadOnlyList<ILunyObject> GetAllObjects()
 		{
-			var tree = (Native.SceneTree)Native.Engine.GetMainLoop();
-			var currentScene = tree?.CurrentScene;
-
+			var currentScene = SceneTree?.CurrentScene;
 			if (currentScene == null)
 				return Array.Empty<ILunyObject>();
 
@@ -45,30 +43,27 @@ namespace Luny.Godot.Engine.Services
 			if (String.IsNullOrEmpty(name))
 				return null;
 
-			var tree = (Native.SceneTree)Native.Engine.GetMainLoop();
-			var currentScene = tree?.CurrentScene;
-
+			var currentScene = SceneTree?.CurrentScene;
 			if (currentScene == null)
 				return null;
 
-			// Search recursively through scene hierarchy
-			Native.Node FindNodeRecursive(Native.Node node)
+			var foundNode = FindNodeRecursive(currentScene, name);
+			return foundNode != null ? new GodotNode(foundNode) : null;
+		}
+
+		private Native.Node FindNodeRecursive(Native.Node node, String name)
+		{
+			if (node.Name == name)
+				return node;
+
+			foreach (var child in node.GetChildren())
 			{
-				if (node.Name == name)
-					return node;
-
-				foreach (var child in node.GetChildren())
-				{
-					var found = FindNodeRecursive(child);
-					if (found != null)
-						return found;
-				}
-
-				return null;
+				var found = FindNodeRecursive(child, name);
+				if (found != null)
+					return found;
 			}
 
-			var foundNode = FindNodeRecursive(currentScene);
-			return foundNode != null ? new GodotNode(foundNode) : null;
+			return null;
 		}
 
 		protected override void OnServiceInitialize()
@@ -97,22 +92,22 @@ namespace Luny.Godot.Engine.Services
 			SceneTree = null;
 		}
 
+		private void OnNativeSceneUnloaded(Native.Node node)
+		{
+			// Note: When NodeRemoved fires, GetTree().CurrentScene is the new scene (or null).
+			if (CurrentScene.NativeScene != SceneTree.CurrentScene)
+			{
+				LunyTraceLogger.LogTrace($"{nameof(OnNativeSceneUnloaded)}: {CurrentScene} => {ToString()}", this);
+				CurrentScene = null;
+			}
+		}
+
 		private void OnNativeSceneLoaded(Native.Node node)
 		{
 			if (node == SceneTree.CurrentScene)
 			{
 				CurrentScene = new GodotScene(SceneTree.CurrentScene);
-				LunyLogger.LogInfo($"{nameof(OnNativeSceneLoaded)}: {CurrentScene} => {ToString()}", this);
-			}
-		}
-
-		private void OnNativeSceneUnloaded(Native.Node node)
-		{
-			// Note: By the time NodeRemoved fires, GetTree().CurrentScene might already be null or the new scene.
-			if (CurrentScene.NativeScene != SceneTree.CurrentScene)
-			{
-				CurrentScene = null;
-				LunyLogger.LogInfo($"{nameof(OnNativeSceneUnloaded)}: {CurrentScene} => {ToString()}", this);
+				LunyTraceLogger.LogTrace($"{nameof(OnNativeSceneLoaded)}: {CurrentScene} => {ToString()}", this);
 			}
 		}
 	}
